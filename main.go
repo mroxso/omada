@@ -13,6 +13,7 @@ import (
 	"github.com/fiatjaf/relay29/khatru29"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/nbd-wtf/go-nostr"
+	"github.com/nbd-wtf/go-nostr/nip29"
 	"github.com/rs/zerolog"
 )
 
@@ -37,10 +38,10 @@ var (
 	state *relay29.State
 )
 
-// var (
-// 	adminRole     = &nip29.Role{Name: "admin", Description: "the group's admin"}
-// 	moderatorRole = &nip29.Role{Name: "moderator", Description: "the group's moderator"}
-// )
+var (
+	kingRole   = &nip29.Role{Name: "king", Description: "the group's max top admin"}
+	bishopRole = &nip29.Role{Name: "bishop", Description: "the group's noble servant"}
+)
 
 func main() {
 	err := envconfig.Process("", &s)
@@ -52,7 +53,6 @@ func main() {
 
 	// load db
 	db.Path = s.DatabasePath
-	// db.MaxLimit = 40000
 	if err := db.Init(); err != nil {
 		log.Fatal().Err(err).Msg("failed to initialize database")
 		return
@@ -61,23 +61,25 @@ func main() {
 
 	// init relay29 stuff
 	relay, state = khatru29.Init(relay29.Options{
-		Domain:    s.Domain,
-		DB:        db,
-		SecretKey: s.RelayPrivkey,
+		Domain:                  s.Domain,
+		DB:                      db,
+		SecretKey:               s.RelayPrivkey,
+		DefaultRoles:            []*nip29.Role{kingRole, bishopRole},
+		GroupCreatorDefaultRole: kingRole,
 	})
 
-	// // setup group-related restrictions
+	// setup group-related restrictions
 	// state.AllowAction = func(ctx context.Context, group nip29.Group, role *nip29.Role, action relay29.Action) bool {
 	// 	// this is simple:
 	// 	if _, ok := action.(relay29.PutUser); ok {
 	// 		// anyone can invite new users
 	// 		return true
 	// 	}
-	// 	if role == adminRole {
+	// 	if role == kingRole {
 	// 		// owners can do everything
 	// 		return true
 	// 	}
-	// 	if role == moderatorRole {
+	// 	if role == bishopRole {
 	// 		// admins can delete people and messages
 	// 		switch action.(type) {
 	// 		case relay29.RemoveUser:
@@ -100,18 +102,24 @@ func main() {
 		blockDeletesOfOldMessages,
 	)
 	relay.RejectEvent = slices.Insert(relay.RejectEvent, 2,
-		policies.PreventLargeTags(640),
-		policies.PreventTooManyIndexableTags(6, []int{9000, 9001, 9003, 9004, 9005}, nil),
+		policies.PreventLargeTags(256),
+		policies.PreventTooManyIndexableTags(6, []int{9005}, nil),
 		policies.RestrictToSpecifiedKinds(true,
-			7, 9, 10, 11, 12, 16, 20, 1018, 1068, 1111,
+			7, 9, 10, 11, 12,
+			1111, 1018, 1068, 1984,
 			30023, 31922, 31923, 9802,
 			9000, 9001, 9002, 9003, 9004, 9005, 9006, 9007, 9008,
-			9021, 9022, 9735, 34235, 34236,
+			9021, 9022,
 		),
 		policies.PreventTimestampsInThePast(60*time.Second),
 		policies.PreventTimestampsInTheFuture(30*time.Second),
 		rateLimit,
+		// preventGroupCreation, //enable client to create groups via kind 9007
 	)
+
+	// http routes
+	// relay.Router().HandleFunc("/create", handleCreateGroup)
+	// relay.Router().HandleFunc("/", handleHomepage)
 
 	log.Info().Str("relay-pubkey", s.RelayPubkey).Msg("running on http://0.0.0.0:" + s.Port)
 	if err := http.ListenAndServe(":"+s.Port, relay); err != nil {
