@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"slices"
@@ -118,6 +119,9 @@ func main() {
 	)
 
 	// http routes
+	relay.Router().HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, "nothing to see here, you must use a nip-29 powered client")
+	})
 	// relay.Router().HandleFunc("/create", handleCreateGroup)
 	// relay.Router().HandleFunc("/", handleHomepage)
 
