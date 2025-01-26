@@ -7,7 +7,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/fiatjaf/eventstore/lmdb"
+	"github.com/fiatjaf/eventstore/sqlite3"
 	"github.com/fiatjaf/khatru"
 	"github.com/fiatjaf/khatru/policies"
 	"github.com/fiatjaf/relay29"
@@ -33,7 +33,7 @@ type Settings struct {
 
 var (
 	s     Settings
-	db    = &lmdb.LMDBBackend{}
+	db    = &sqlite3.SQLite3Backend{}
 	log   = zerolog.New(os.Stderr).Output(zerolog.ConsoleWriter{Out: os.Stdout}).With().Timestamp().Logger()
 	relay *khatru.Relay
 	state *relay29.State
@@ -53,12 +53,12 @@ func main() {
 	s.RelayPubkey, _ = nostr.GetPublicKey(s.RelayPrivkey)
 
 	// load db
-	db.Path = s.DatabasePath
+	db.DatabaseURL = s.DatabasePath
 	if err := db.Init(); err != nil {
 		log.Fatal().Err(err).Msg("failed to initialize database")
 		return
 	}
-	log.Debug().Str("path", db.Path).Msg("initialized database")
+	log.Debug().Str("path", db.DatabaseURL).Msg("initialized database")
 
 	// init relay29 stuff
 	relay, state = khatru29.Init(relay29.Options{
