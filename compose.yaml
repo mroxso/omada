@@ -2,6 +2,18 @@ services:
   omada:
     build:
       context: .
-      target: final
+      # target: final
+    volumes:
+      - ./db/:/app/db/
+    environment:
+      - DOMAIN=omada.example.com
+      - RELAY_NAME=Omada Groups Relay
+      - RELAY_PRIVKEY=XXXX
+      # OPTIONAL
+      - RELAY_DESCRIPTION=Omada Groups Relay
+      # - RELAY_CONTACT=contact@example.com
+      # - RELAY_ICON=https://example.com/icon.png
+      # - DATABASE_PATH=./db
+      # - PORT=4200
     ports:
       - 4200:4200
