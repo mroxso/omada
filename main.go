@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -69,29 +70,31 @@ func main() {
 		GroupCreatorDefaultRole: kingRole,
 	})
 
+	state.AllowPrivateGroups = true
+
 	// setup group-related restrictions
-	// state.AllowAction = func(ctx context.Context, group nip29.Group, role *nip29.Role, action relay29.Action) bool {
-	// 	// this is simple:
-	// 	if _, ok := action.(relay29.PutUser); ok {
-	// 		// anyone can invite new users
-	// 		return true
-	// 	}
-	// 	if role == kingRole {
-	// 		// owners can do everything
-	// 		return true
-	// 	}
-	// 	if role == bishopRole {
-	// 		// admins can delete people and messages
-	// 		switch action.(type) {
-	// 		case relay29.RemoveUser:
-	// 			return true
-	// 		case relay29.DeleteEvent:
-	// 			return true
-	// 		}
-	// 	}
-	// 	// no one else can do anything else
-	// 	return false
-	// }
+	state.AllowAction = func(ctx context.Context, group nip29.Group, role *nip29.Role, action relay29.Action) bool {
+		// this is simple:
+		if _, ok := action.(relay29.PutUser); ok {
+			// anyone can invite new users
+			return true
+		}
+		if role == kingRole {
+			// owners can do everything
+			return true
+		}
+		if role == bishopRole {
+			// admins can delete people and messages
+			switch action.(type) {
+			case relay29.RemoveUser:
+				return true
+			case relay29.DeleteEvent:
+				return true
+			}
+		}
+		// no one else can do anything else
+		return false
+	}
 
 	// init relay
 	relay.Info.Name = s.RelayName
