@@ -2,7 +2,7 @@ services:
   omada:
     build:
       context: .
-      # target: final
+      target: final
     volumes:
       - ./db/:/app/db/
     environment:
