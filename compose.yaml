@@ -1,0 +1,7 @@
+services:
+  omada:
+    build:
+      context: .
+      target: final
+    ports:
+      - 4200:4200
