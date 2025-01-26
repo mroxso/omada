@@ -25,7 +25,7 @@ type Settings struct {
 	RelayDescription string `envconfig:"RELAY_DESCRIPTION"`
 	RelayContact     string `envconfig:"RELAY_CONTACT"`
 	RelayIcon        string `envconfig:"RELAY_ICON"`
-	DatabasePath     string `envconfig:"DATABASE_PATH" default:"./db"`
+	DatabasePath     string `envconfig:"DATABASE_PATH" default:"/db"`
 
 	RelayPubkey string `envconfig:"-"`
 }
