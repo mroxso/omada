@@ -13,7 +13,7 @@ services:
       - RELAY_DESCRIPTION=Omada Groups Relay
       # - RELAY_CONTACT=contact@example.com
       # - RELAY_ICON=https://example.com/icon.png
-      - DATABASE_PATH=/db
+      - DATABASE_PATH=/db/omada.sqlite
       # - PORT=4200
     ports:
       - 4200:4200
