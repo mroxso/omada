@@ -8,7 +8,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/fiatjaf/eventstore/sqlite3"
+	"github.com/fiatjaf/eventstore/postgresql"
 	"github.com/fiatjaf/khatru"
 	"github.com/fiatjaf/khatru/policies"
 	"github.com/fiatjaf/relay29"
@@ -27,14 +27,14 @@ type Settings struct {
 	RelayDescription string `envconfig:"RELAY_DESCRIPTION"`
 	RelayContact     string `envconfig:"RELAY_CONTACT"`
 	RelayIcon        string `envconfig:"RELAY_ICON"`
-	DatabasePath     string `envconfig:"DATABASE_PATH" default:"/db"`
+	DatabasePath     string `envconfig:"DATABASE_PATH" default:"postgres://omada:omada@postgres/omada?sslmode=disable"`
 
 	RelayPubkey string `envconfig:"-"`
 }
 
 var (
 	s     Settings
-	db    = &sqlite3.SQLite3Backend{}
+	db    = &postgresql.PostgresBackend{}
 	log   = zerolog.New(os.Stderr).Output(zerolog.ConsoleWriter{Out: os.Stdout}).With().Timestamp().Logger()
 	relay *khatru.Relay
 	state *relay29.State
